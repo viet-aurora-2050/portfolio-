@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>WALLET // DIREKTVERBINDUNG</title>
+<style>
+  :root {
+    --bg:        #060a12;
+    --surface:   #0b1320;
+    --surface-2: #0e1a2c;
+    --border:    #1b2e46;
+    --text:      #c6d4e4;
+    --dim:       #5d7693;
+    --amber:     #e8a13a;  /* aktiv / verbunden */
+    --cyan:      #4fd1e0;  /* info / werte */
+    --danger:    #e0573a;
+    --ok:        #5ad08a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', 'SF Mono', ui-monospace, 'Cascadia Code', Menlo, Consolas, monospace;
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    line-height: 1.5;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* subtle scanline texture */
+  body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    pointer-events: none;
+    background: repeating-linear-gradient(
+      0deg, rgba(0,0,0,0) 0px, rgba(0,0,0,0) 2px,
+      rgba(0,0,0,0.18) 3px, rgba(0,0,0,0) 4px
+    );
+    z-index: 999;
+    opacity: 0.4;
+  }
+
+  .console {
+    width: 100%;
+    max-width: 540px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px rgba(0,0,0,0.4), 0 24px 60px rgba(0,0,0,0.55);
+  }
+
+  /* ── header / status ── */
+  .head {
+    padding: 14px 18px;
+    border-bottom: 1px solid var(--border);
+    background: var(--surface-2);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .dot {
+    width: 9px; height: 9px; border-radius: 50%;
+    background: var(--dim);
+    box-shadow: 0 0 0 0 rgba(0,0,0,0);
+    transition: background .3s, box-shadow .3s;
+  }
+  .dot.live { background: var(--amber); box-shadow: 0 0 10px var(--amber); }
+  .dot.err  { background: var(--danger); box-shadow: 0 0 10px var(--danger); }
+  .title {
+    font-size: 12px;
+    letter-spacing: 2px;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  .statusline {
+    padding: 16px 18px;
+    font-size: 13px;
+    color: var(--cyan);
+    border-bottom: 1px solid var(--border);
+    min-height: 50px;
+  }
+  .statusline .prompt { color: var(--dim); }
+  .cursor {
+    display: inline-block;
+    width: 8px; height: 14px;
+    background: var(--cyan);
+    vertical-align: text-bottom;
+    margin-left: 2px;
+    animation: blink 1.1s steps(1) infinite;
+  }
+  @keyframes blink { 0%,50% { opacity:1 } 50.01%,100% { opacity:0 } }
+
+  /* ── body ── */
+  .body { padding: 18px; }
+
+  .hint {
+    font-size: 12.5px;
+    color: var(--dim);
+    margin-bottom: 16px;
+  }
+
+  /* wallet list */
+  .wallets { display: flex; flex-direction: column; gap: 8px; }
+  .wallet-btn {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    text-align: left;
+    background: var(--surface-2);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14px;
+    padding: 13px 15px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color .15s, background .15s, transform .05s;
+  }
+  .wallet-btn:hover { border-color: var(--amber); background: #11223a; }
+  .wallet-btn:active { transform: translateY(1px); }
+  .wallet-btn:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .wallet-btn img { width: 26px; height: 26px; border-radius: 5px; }
+  .wallet-btn .ph {
+    width: 26px; height: 26px; border-radius: 5px;
+    background: var(--border); display:flex; align-items:center;
+    justify-content:center; font-size: 13px; color: var(--cyan);
+  }
+  .wallet-btn .arrow { margin-left: auto; color: var(--dim); }
+
+  /* ── readout (connected) ── */
+  .readout { display: none; }
+  .readout.show { display: block; }
+
+  .row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px dashed var(--border);
+  }
+  .row:last-of-type { border-bottom: none; }
+  .row .k { font-size: 11px; letter-spacing: 1.5px; text-transform: uppercase; color: var(--dim); }
+  .row .v { font-size: 14px; color: var(--text); text-align: right; word-break: break-all; }
+  .v.amber { color: var(--amber); }
+  .v.cyan  { color: var(--cyan); }
+  .v.big   { font-size: 22px; }
+
+  .addr { cursor: pointer; }
+  .addr:hover { color: var(--cyan); }
+
+  .actions { display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap; }
+  .act {
+    flex: 1;
+    min-width: 120px;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: inherit;
+    font-size: 12.5px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 11px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: border-color .15s, color .15s;
+  }
+  .act:hover { border-color: var(--cyan); color: var(--cyan); }
+  .act:focus-visible { outline: 2px solid var(--cyan); outline-offset: 2px; }
+  .act.warn:hover { border-color: var(--danger); color: var(--danger); }
+
+  .sig {
+    margin-top: 14px;
+    font-size: 11.5px;
+    color: var(--ok);
+    background: rgba(90,208,138,0.06);
+    border: 1px solid rgba(90,208,138,0.25);
+    border-radius: 4px;
+    padding: 10px 12px;
+    word-break: break-all;
+    display: none;
+  }
+  .sig.show { display: block; }
+
+  .foot {
+    padding: 12px 18px;
+    border-top: 1px solid var(--border);
+    font-size: 10.5px;
+    color: var(--dim);
+    letter-spacing: 0.5px;
+    text-align: center;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cursor { animation: none; }
+  }
+</style>
+</head>
+<body>
+  <main class="console" role="application" aria-label="Wallet-Direktverbindung">
+    <div class="head">
+      <span class="dot" id="dot" aria-hidden="true"></span>
+      <span class="title">Wallet&nbsp;//&nbsp;Direktverbindung</span>
+    </div>
+
+    <div class="statusline" aria-live="polite">
+      <span class="prompt">∆ </span><span id="status">bereit</span><span class="cursor" aria-hidden="true"></span>
+    </div>
+
+    <div class="body">
+      <!-- selection state -->
+      <div id="select">
+        <p class="hint">Wähle deine Wallet. Die Verbindung läuft komplett lokal in deinem Browser — keine Server, keine Drittanbieter.</p>
+        <div class="wallets" id="walletList"></div>
+      </div>
+
+      <!-- connected state -->
+      <div class="readout" id="readout">
+        <div class="row">
+          <span class="k">Wallet</span>
+          <span class="v cyan" id="rWallet">—</span>
+        </div>
+        <div class="row">
+          <span class="k">Adresse</span>
+          <span class="v addr" id="rAddr" title="Tippen zum Kopieren">—</span>
+        </div>
+        <div class="row">
+          <span class="k">Netzwerk</span>
+          <span class="v" id="rNet">—</span>
+        </div>
+        <div class="row">
+          <span class="k">Guthaben</span>
+          <span class="v amber big" id="rBal">—</span>
+        </div>
+
+        <div class="actions">
+          <button class="act" id="btnRefresh">Aktualisieren</button>
+          <button class="act" id="btnSign">Signieren</button>
+          <button class="act warn" id="btnDisc">Trennen</button>
+        </div>
+
+        <div class="sig" id="sigBox"></div>
+      </div>
+    </div>
+
+    <div class="foot">EIP-6963 · EIP-1193 · 0 Abhängigkeiten · läuft offline aus einer Datei</div>
+  </main>
+
+<script>
+(() => {
+  "use strict";
+
+  // ── element refs ──
+  const $ = (id) => document.getElementById(id);
+  const dot = $("dot"), statusEl = $("status");
+  const selectView = $("select"), readoutView = $("readout");
+  const walletList = $("walletList");
+  const rWallet = $("rWallet"), rAddr = $("rAddr"), rNet = $("rNet"), rBal = $("rBal");
+  const sigBox = $("sigBox");
+
+  // ── state ──
+  const discovered = new Map();   // rdns -> { info, provider }
+  let active = null;              // { info, provider }
+  let account = null;
+  let chainId = null;
+
+  // ── reference tables ──
+  const NETWORKS = {
+    "0x1":      "Ethereum Mainnet",
+    "0xaa36a7": "Sepolia (Testnet)",
+    "0x5":      "Goerli (Testnet)",
+    "0x89":     "Polygon",
+    "0x2105":   "Base",
+    "0xa":      "Optimism",
+    "0xa4b1":   "Arbitrum One",
+    "0x38":     "BNB Smart Chain",
+    "0xa86a":   "Avalanche C-Chain"
+  };
+  const SYMBOL = {
+    "0x89": "POL", "0x38": "BNB", "0xa86a": "AVAX"
+  };
+
+  // ── helpers ──
+  function setStatus(msg, kind) {
+    statusEl.textContent = msg;
+    dot.className = "dot" + (kind === "live" ? " live" : kind === "err" ? " err" : "");
+  }
+  function short(addr) {
+    return addr ? addr.slice(0, 6) + "…" + addr.slice(-4) : "—";
+  }
+  function weiHexToUnit(hex) {
+    const wei = BigInt(hex);
+    const whole = wei / 1000000000000000000n;
+    const rem   = wei % 1000000000000000000n;
+    let frac = rem.toString().padStart(18, "0").slice(0, 5).replace(/0+$/, "");
+    return frac ? `${whole}.${frac}` : `${whole}`;
+  }
+
+  // ── EIP-6963 wallet discovery ──
+  window.addEventListener("eip6963:announceProvider", (e) => {
+    const { info, provider } = e.detail;
+    if (!discovered.has(info.rdns)) {
+      discovered.set(info.rdns, { info, provider });
+      renderWalletList();
+    }
+  });
+  window.dispatchEvent(new Event("eip6963:requestProvider"));
+
+  // fallback to legacy injected provider after short grace period
+  setTimeout(() => {
+    if (discovered.size === 0 && window.ethereum) {
+      const isMM = window.ethereum.isMetaMask;
+      const isCB = window.ethereum.isCoinbaseWallet;
+      discovered.set("injected", {
+        info: { rdns: "injected", uuid: "injected", icon: null,
+                name: isMM ? "MetaMask" : isCB ? "Coinbase Wallet" : "Browser-Wallet" },
+        provider: window.ethereum
+      });
+    }
+    renderWalletList();
+  }, 350);
+
+  function renderWalletList() {
+    walletList.innerHTML = "";
+    if (discovered.size === 0) {
+      const empty = document.createElement("div");
+      empty.className = "hint";
+      empty.style.color = "var(--danger)";
+      empty.textContent = "Keine Wallet gefunden. Öffne diese Datei in einem Browser mit installierter MetaMask- oder Coinbase-Wallet-Extension (z. B. Chrome, Brave oder Firefox).";
+      walletList.appendChild(empty);
+      setStatus("keine wallet erkannt", "err");
+      return;
+    }
+    setStatus(`${discovered.size} wallet(s) erkannt`, null);
+    for (const { info, provider } of discovered.values()) {
+      const btn = document.createElement("button");
+      btn.className = "wallet-btn";
+      btn.innerHTML =
+        (info.icon
+          ? `<img src="${info.icon}" alt="" />`
+          : `<span class="ph">${info.name.charAt(0)}</span>`) +
+        `<span>${info.name}</span><span class="arrow">→</span>`;
+      btn.addEventListener("click", () => connect({ info, provider }));
+      walletList.appendChild(btn);
+    }
+  }
+
+  // ── connect ──
+  async function connect(w) {
+    active = w;
+    setStatus(`verbinde mit ${w.info.name}…`, null);
+    try {
+      const accounts = await w.provider.request({ method: "eth_requestAccounts" });
+      account = accounts[0];
+      chainId = await w.provider.request({ method: "eth_chainId" });
+
+      attachListeners(w.provider);
+      showReadout();
+      await refresh();
+      setStatus(`verbunden · ${w.info.name}`, "live");
+    } catch (err) {
+      if (err && err.code === 4001) {
+        setStatus("verbindung abgelehnt", "err");
+      } else {
+        setStatus("fehler: " + (err && err.message ? err.message : "unbekannt"), "err");
+      }
+    }
+  }
+
+  function attachListeners(provider) {
+    if (provider._wcBound) return;       // bind once
+    provider._wcBound = true;
+    provider.on && provider.on("accountsChanged", (accts) => {
+      if (!accts || accts.length === 0) { disconnect(); return; }
+      account = accts[0];
+      rAddr.textContent = short(account);
+      refresh();
+    });
+    provider.on && provider.on("chainChanged", (cid) => {
+      chainId = cid;
+      refresh();
+    });
+  }
+
+  // ── read balance + network ──
+  async function refresh() {
+    if (!active || !account) return;
+    rWallet.textContent = active.info.name;
+    rAddr.textContent = short(account);
+    rNet.textContent = NETWORKS[chainId] || `Chain ${parseInt(chainId, 16)}`;
+    rBal.textContent = "…";
+    try {
+      const hex = await active.provider.request({
+        method: "eth_getBalance",
+        params: [account, "latest"]
+      });
+      const sym = SYMBOL[chainId] || "ETH";
+      rBal.textContent = `${weiHexToUnit(hex)} ${sym}`;
+    } catch {
+      rBal.textContent = "n/v";
+    }
+  }
+
+  // ── sign message (proof of ownership) ──
+  async function sign() {
+    if (!active || !account) return;
+    sigBox.classList.remove("show");
+    const msg = `Direktverbindung bestätigt\nAdresse: ${account}\nZeit: ${new Date().toISOString()}`;
+    setStatus("warte auf signatur…", null);
+    try {
+      const sig = await active.provider.request({
+        method: "personal_sign",
+        params: [msg, account]
+      });
+      sigBox.textContent = "✓ Signatur: " + sig;
+      sigBox.classList.add("show");
+      setStatus("signatur erhalten", "live");
+    } catch (err) {
+      setStatus(err && err.code === 4001 ? "signatur abgelehnt" : "signatur fehlgeschlagen", "err");
+    }
+  }
+
+  // ── disconnect (local only — clears UI state) ──
+  function disconnect() {
+    account = null; chainId = null; active = null;
+    sigBox.classList.remove("show");
+    readoutView.classList.remove("show");
+    selectView.style.display = "";
+    setStatus("getrennt", null);
+  }
+
+  function showReadout() {
+    selectView.style.display = "none";
+    readoutView.classList.add("show");
+  }
+
+  // ── wiring ──
+  $("btnRefresh").addEventListener("click", refresh);
+  $("btnSign").addEventListener("click", sign);
+  $("btnDisc").addEventListener("click", disconnect);
+  rAddr.addEventListener("click", () => {
+    if (!account) return;
+    navigator.clipboard && navigator.clipboard.writeText(account).then(() => {
+      const prev = rAddr.textContent;
+      rAddr.textContent = "kopiert ✓";
+      setTimeout(() => { rAddr.textContent = prev; }, 1000);
+    });
+  });
+})();
+</script>
+</body>
+</html>
