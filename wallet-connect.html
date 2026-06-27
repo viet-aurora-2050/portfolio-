@@ -250,12 +250,86 @@
   const NETWORKS={"0x1":"Ethereum Mainnet","0xaa36a7":"Sepolia (Testnet)","0x5":"Goerli (Testnet)","0x89":"Polygon","0x2105":"Base","0xa":"Optimism","0xa4b1":"Arbitrum One","0x38":"BNB Smart Chain","0xa86a":"Avalanche C-Chain"};
   const SYMBOL={"0x89":"POL","0x38":"BNB","0xa86a":"AVAX"};
   const EXPLORER={"0x1":"https://etherscan.io/tx/","0xaa36a7":"https://sepolia.etherscan.io/tx/","0x89":"https://polygonscan.com/tx/","0x2105":"https://basescan.org/tx/","0xa":"https://optimistic.etherscan.io/tx/","0xa4b1":"https://arbiscan.io/tx/","0x38":"https://bscscan.com/tx/"};
+  /* kanonische ERC-20-Adressen je Netzwerk */
+  const TOKENS={
+    "0x1":[
+      {s:"USDC",a:"0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"},
+      {s:"USDT",a:"0xdAC17F958D2ee523a2206206994597C13D831ec7"},
+      {s:"DAI", a:"0x6B175474E89094C44Da98b954EedeAC495271d0F"},
+      {s:"WETH",a:"0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"},
+      {s:"WBTC",a:"0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599"},
+      {s:"LINK",a:"0x514910771AF9Ca656af840dff83E8264EcF986CA"}
+    ],
+    "0x2105":[
+      {s:"USDC",a:"0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913"},
+      {s:"DAI", a:"0x50c5725949A6F0c72E6C4a641F24049A917DB0Cb"},
+      {s:"WETH",a:"0x4200000000000000000000000000000000000006"}
+    ],
+    "0x89":[
+      {s:"USDC",a:"0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359"},
+      {s:"USDT",a:"0xc2132D05D31c914a87C6611C10748AEb04B58e8F"},
+      {s:"DAI", a:"0x8f3Cf7ad23Cd3CaDbD9735AFf958023239c6A063"},
+      {s:"WETH",a:"0x7ceB23fD6bC0adD59E62ac25578270cFf1b9f619"}
+    ],
+    "0xa4b1":[
+      {s:"USDC",a:"0xaf88d065e77c8cC2239327C5EDb3A432268e5831"},
+      {s:"USDT",a:"0xFd086bC7CD5C481DCC9C85ebE478A1C0b69FCbb9"},
+      {s:"WETH",a:"0x82aF49447D8a07e3bd95BD0d56f35241523fBab1"}
+    ],
+    "0xa":[
+      {s:"USDC",a:"0x0b2C639c533813f4Aa9D7837CAf62653d097Ff85"},
+      {s:"USDT",a:"0x94b008aA00579c1307B0EF2c499aD98a8ce58e58"},
+      {s:"WETH",a:"0x4200000000000000000000000000000000000006"}
+    ]
+  };
+  const decCache={};
 
   function setStatus(msg,kind){statusEl.textContent=msg;dot.className="dot"+(kind==="live"?" live":kind==="err"?" err":"");}
   function short(a){return a?a.slice(0,6)+"…"+a.slice(-4):"—";}
   function weiHexToUnit(hex){const wei=BigInt(hex);const whole=wei/1000000000000000000n;const rem=wei%1000000000000000000n;let f=rem.toString().padStart(18,"0").slice(0,5).replace(/0+$/,"");return f?`${whole}.${f}`:`${whole}`;}
   function ethToWeiHex(s){s=String(s).trim().replace(",",".");if(!/^\d+(\.\d+)?$/.test(s))throw new Error("Ungültiger Betrag");const[w,fr=""]=s.split(".");const frac=(fr+"0".repeat(18)).slice(0,18);const wei=BigInt(w||"0")*1000000000000000000n+BigInt(frac||"0");if(wei<=0n)throw new Error("Betrag muss größer als 0 sein");return"0x"+wei.toString(16);}
   function curSym(){return SYMBOL[chainId]||"ETH";}
+
+  /* ── ERC-20 lesen (eth_call, ohne Bibliothek) ── */
+  async function ethCall(to,data){return active.provider.request({method:"eth_call",params:[{to,data},"latest"]});}
+  function padAddr(a){return a.toLowerCase().replace(/^0x/,"").padStart(64,"0");}
+  async function tokenDecimals(addr){
+    if(decCache[addr]!=null)return decCache[addr];
+    try{const r=await ethCall(addr,"0x313ce567");const d=(r&&r!=="0x")?Number(BigInt(r)):18;decCache[addr]=d;return d;}
+    catch{return 18;}
+  }
+  async function tokenBalance(addr,owner){
+    try{const r=await ethCall(addr,"0x70a08231"+padAddr(owner));return(r&&r!=="0x")?BigInt(r):0n;}
+    catch{return 0n;}
+  }
+  function fmtUnits(raw,dec){
+    const base=10n**BigInt(dec);const whole=raw/base,rem=raw%base;
+    let f=rem.toString().padStart(dec,"0").slice(0,6).replace(/0+$/,"");
+    const ws=whole.toString().replace(/\B(?=(\d{3})+(?!\d))/g,".");
+    return f?ws+","+f:ws;
+  }
+  async function refreshTokens(){
+    const list=$("tokList");
+    if(!active||!account)return;
+    const toks=TOKENS[chainId];
+    if(!toks||!toks.length){list.innerHTML='<div class="tokempty">Für dieses Netzwerk sind keine Token hinterlegt.</div>';return;}
+    list.innerHTML='<div class="tokempty">lädt…</div>';
+    const snapAcct=account,snapChain=chainId;
+    try{
+      const rows=await Promise.all(toks.map(async t=>{
+        const[bal,dec]=await Promise.all([tokenBalance(t.a,snapAcct),tokenDecimals(t.a)]);
+        return{s:t.s,amount:fmtUnits(bal,dec),zero:bal===0n};
+      }));
+      if(account!==snapAcct||chainId!==snapChain)return; // veraltet
+      list.innerHTML="";
+      for(const r of rows){
+        const div=document.createElement("div");
+        div.className="tokrow"+(r.zero?" zero":"");
+        div.innerHTML='<span class="ts">'+r.s+'</span><span class="tv">'+r.amount+'</span>';
+        list.appendChild(div);
+      }
+    }catch{list.innerHTML='<div class="tokempty">Token-Guthaben nicht abrufbar.</div>';}
+  }
 
   /* ── tabs ── */
   document.querySelectorAll(".tab").forEach(t=>t.addEventListener("click",()=>{
@@ -342,6 +416,7 @@
       const hex=await active.provider.request({method:"eth_getBalance",params:[account,"latest"]});
       $("rBal").textContent=`${weiHexToUnit(hex)} ${curSym()}`;
     }catch{$("rBal").textContent="n/v";}
+    refreshTokens();
   }
 
   /* ── sign ── */
