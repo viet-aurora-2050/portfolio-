@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DonQ // SP — Arbeiten</title>
+<style>
+  :root{
+    --bg:#05080f;
+    --bg2:#080d18;
+    --surface:#0b1320;
+    --border:#1b2e46;
+    --border-soft:#13202f;
+    --text:#c6d4e4;
+    --dim:#5d7693;
+    --amber:#e8a13a;
+    --cyan:#4fd1e0;
+    --cyan-bright:#9be8f7;
+    --ok:#5ad08a;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{min-height:100%}
+  body{
+    background:radial-gradient(120% 80% at 50% -10%,#0a1320 0%,var(--bg) 62%,#03060c 100%);
+    color:var(--text);
+    font-family:"JetBrains Mono","SF Mono",ui-monospace,Menlo,Consolas,monospace;
+    line-height:1.55;
+    padding:34px 16px 64px;
+    -webkit-font-smoothing:antialiased;
+    letter-spacing:.015em;
+  }
+  /* scanlines */
+  body::before{
+    content:"";position:fixed;inset:0;pointer-events:none;z-index:99;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,0) 0,rgba(0,0,0,0) 2px,rgba(0,0,0,.16) 3px,rgba(0,0,0,0) 4px);
+    opacity:.5;
+  }
+  .wrap{max-width:600px;margin:0 auto}
+
+  /* ---- header ---- */
+  .eyebrow{font-size:11px;letter-spacing:.32em;color:var(--dim);text-transform:uppercase;margin-bottom:14px}
+  /* ↓↓↓ HIER deinen Namen / Handle ändern ↓↓↓ */
+  h1{
+    font-size:30px;font-weight:700;letter-spacing:.04em;color:var(--amber);
+    text-shadow:0 0 18px rgba(232,161,58,.25);line-height:1.15;
+  }
+  h1 .slash{color:var(--dim);font-weight:400}
+  .tag{margin-top:12px;font-size:13.5px;color:var(--dim);max-width:46ch}
+  .tag b{color:var(--text);font-weight:400}
+
+  .status{
+    margin-top:20px;font-size:12px;color:var(--cyan);
+    border-top:1px solid var(--border-soft);border-bottom:1px solid var(--border-soft);
+    padding:11px 0;display:flex;align-items:center;gap:9px;
+  }
+  .led{width:8px;height:8px;border-radius:50%;background:var(--ok);box-shadow:0 0 9px var(--ok);
+    animation:pulse 2.2s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.35}}
+  .status .p{color:var(--dim)}
+
+  /* ---- cards ---- */
+  .grid{margin-top:26px;display:flex;flex-direction:column;gap:13px}
+  .card{
+    display:block;text-decoration:none;color:inherit;
+    background:linear-gradient(180deg,var(--surface),#091120);
+    border:1px solid var(--border);border-radius:7px;
+    padding:18px 18px 16px;position:relative;overflow:hidden;
+    transition:border-color .16s,transform .06s,box-shadow .16s;
+  }
+  .card:hover{border-color:var(--cyan);box-shadow:0 0 0 1px rgba(79,209,224,.25),0 14px 40px rgba(0,0,0,.5)}
+  .card:active{transform:translateY(1px)}
+  .card:focus-visible{outline:2px solid var(--cyan);outline-offset:3px}
+  .card .num{font-size:11px;letter-spacing:.2em;color:var(--dim)}
+  .card h2{font-size:16.5px;font-weight:700;letter-spacing:.04em;margin:7px 0 6px;color:var(--text)}
+  .card:hover h2{color:var(--cyan-bright)}
+  .card p{font-size:12.5px;color:var(--dim);line-height:1.6}
+  .card .meta{margin-top:11px;font-size:10.5px;letter-spacing:.12em;color:var(--amber);text-transform:uppercase}
+  .card .go{position:absolute;top:18px;right:18px;color:var(--dim);font-size:15px;transition:color .16s,transform .16s}
+  .card:hover .go{color:var(--cyan);transform:translateX(3px)}
+
+  .foot{margin-top:32px;font-size:10.5px;color:#2c3a4c;letter-spacing:.1em;line-height:1.9;text-align:center}
+
+  @media(max-width:430px){
+    body{padding:26px 13px 52px}
+    h1{font-size:25px}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .led{animation:none}
+  }
+</style>
+</head>
+<body>
+  <div class="wrap">
+
+    <div class="eyebrow">◢ Frontend · Web3 · ∆1</div>
+    <!-- Namen unten frei ändern: -->
+    <h1>DonQ <span class="slash">//</span> SP</h1>
+    <p class="tag">Selbstgebaute Web-Tools und interaktive Artefakte — <b>vanilla JavaScript, keine Frameworks, läuft offline aus einer Datei.</b></p>
+
+    <div class="status">
+      <span class="led" aria-hidden="true"></span>
+      <span><span class="p">status //</span> online · sichtbar</span>
+    </div>
+
+    <div class="grid">
+
+      <a class="card" href="wallet-connect.html">
+        <span class="go" aria-hidden="true">→</span>
+        <div class="num">01</div>
+        <h2>Wallet // Direktverbindung</h2>
+        <p>Web3-Wallet-Anbindung im Browser. Erkennt installierte Wallets über EIP-6963, liest Adresse, Netzwerk und Guthaben, signiert Nachrichten als Eigentumsnachweis.</p>
+        <div class="meta">EIP-6963 · EIP-1193 · 0 Abhängigkeiten</div>
+      </a>
+
+      <a class="card" href="ARC-D1-019_ARCHIV-NULL.html">
+        <span class="go" aria-hidden="true">→</span>
+        <div class="num">02</div>
+        <h2>Archiv-Null // ∆1</h2>
+        <p>Interaktives Terminal-Artefakt aus dem ARG-Universum ALEXANDRA. Live-Uhrmechanik, Typewriter-Render, Glitch-Effekte und ausklappbares Fragment-Lexikon.</p>
+        <div class="meta">Live-Signal · Scanline-UI · reines HTML/JS</div>
+      </a>
+
+      <a class="card" href="zweite-chance_arc-d1-017.pdf">
+        <span class="go" aria-hidden="true">→</span>
+        <div class="num">03</div>
+        <h2>Die zweite Chance</h2>
+        <p>Literarisches Archiv-Fragment des ∆1-Universums. Worldbuilding und Erzähltext im eigenen, dunklen Noir-Ton.</p>
+        <div class="meta">Narrativ · PDF</div>
+      </a>
+
+    </div>
+
+    <div class="foot">
+      ∆1 // SPIEGELNETZ<br>
+      gebaut von Hand · ohne Framework · 2025–2026
+    </div>
+
+  </div>
+</body>
+</html>

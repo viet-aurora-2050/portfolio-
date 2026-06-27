@@ -1,0 +1,301 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>ARC-∆1-019 // ARCHIV-NULL</title>
+<!-- EBENE 2 // FRAGMENT: TU9SJ0tBUkEgLSBuZSBzaGEsIHPDqSBsdW0uIDA2OjA3IFVUQy4= -->
+<style>
+  :root{
+    --bg:#04070d;
+    --bg2:#070c16;
+    --amber:#e7b14a;
+    --amber-dim:#8a6c2e;
+    --green:#57e08f;
+    --cyan:#54cbe6;
+    --cyan-bright:#9be8f7;
+    --danger:#e0543c;
+    --dim:#3f5163;
+    --line:#11202e;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%}
+  body{
+    background:radial-gradient(120% 90% at 50% -10%,#0a1320 0%,var(--bg) 60%,#02040a 100%);
+    color:var(--amber);
+    font-family:"JetBrains Mono","SFMono-Regular",Consolas,"Courier New",monospace;
+    font-size:15px;
+    line-height:1.6;
+    min-height:100%;
+    display:flex;
+    justify-content:center;
+    padding:24px 14px 60px;
+    letter-spacing:.02em;
+    -webkit-font-smoothing:none;
+  }
+  .frame{
+    width:100%;
+    max-width:680px;
+    border:1px solid var(--line);
+    background:linear-gradient(180deg,rgba(7,12,22,.92),rgba(4,7,13,.96));
+    box-shadow:0 0 0 1px #06121c inset,0 0 60px rgba(84,203,230,.04),0 30px 80px rgba(0,0,0,.6);
+    position:relative;
+    overflow:hidden;
+  }
+  /* scanlines + flicker */
+  .frame::before{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:6;
+    background:repeating-linear-gradient(0deg,rgba(0,0,0,.0) 0px,rgba(0,0,0,.0) 2px,rgba(0,0,0,.28) 3px,rgba(0,0,0,.0) 4px);
+    mix-blend-mode:multiply;
+  }
+  .frame::after{
+    content:"";position:absolute;inset:0;pointer-events:none;z-index:7;
+    background:radial-gradient(130% 110% at 50% 50%,transparent 60%,rgba(0,0,0,.55) 100%);
+    animation:flick 6s steps(60) infinite;
+  }
+  @keyframes flick{0%,100%{opacity:.85}48%{opacity:.95}50%{opacity:.7}52%{opacity:.95}}
+
+  .inner{padding:22px 20px 26px;position:relative;z-index:2}
+
+  .topbar{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;
+    border-bottom:1px solid var(--line);padding-bottom:10px;margin-bottom:14px}
+  .sig{color:var(--green);font-size:12px;letter-spacing:.18em}
+  .id{color:var(--amber-dim);font-size:11px;letter-spacing:.14em}
+
+  .meta{font-size:11.5px;color:var(--dim);line-height:1.9;margin-bottom:16px}
+  .meta b{color:var(--amber-dim);font-weight:400}
+  .meta .ok{color:var(--green)}
+  .ocr{color:var(--cyan)}
+  .ocr .blk{color:var(--danger)}
+
+  .clockrow{display:flex;gap:18px;flex-wrap:wrap;align-items:baseline;
+    border-block:1px solid var(--line);padding:10px 0;margin-bottom:18px}
+  .clk{font-size:12px;color:var(--dim)}
+  .clk b{display:block;color:var(--cyan-bright);font-size:19px;letter-spacing:.08em;margin-top:2px;text-shadow:0 0 8px rgba(84,203,230,.45)}
+  .clk.cd b{color:var(--amber);text-shadow:0 0 8px rgba(231,177,74,.35)}
+
+  .body-sig{white-space:pre-wrap;font-size:14.5px;color:var(--amber);
+    text-shadow:0 0 6px rgba(231,177,74,.18);min-height:200px}
+  .body-sig .caret{display:inline-block;width:9px;height:16px;background:var(--amber);
+    vertical-align:-2px;animation:blink 1s steps(2) infinite;box-shadow:0 0 8px var(--amber)}
+  @keyframes blink{50%{opacity:0}}
+
+  .divider{border:0;border-top:1px dashed var(--line);margin:22px 0 14px}
+
+  .traeger-label{font-size:11px;letter-spacing:.16em;color:var(--danger);margin-bottom:8px;
+    display:flex;align-items:center;gap:8px}
+  .traeger-label .dot{width:7px;height:7px;border-radius:50%;background:var(--danger);
+    box-shadow:0 0 10px var(--danger);animation:pulse 1.4s ease-in-out infinite}
+  @keyframes pulse{50%{opacity:.3;transform:scale(.7)}}
+
+  .traeger{white-space:pre-wrap;font-size:16px;line-height:1.8;color:var(--cyan);
+    text-shadow:0 0 10px rgba(84,203,230,.4);filter:saturate(1.2);
+    padding:4px 0;transition:text-shadow .4s,color .4s}
+  .traeger .g{display:inline-block;transition:opacity .08s}
+  .traeger.active{color:var(--cyan-bright);text-shadow:0 0 16px rgba(155,232,247,.7)}
+
+  .render-note{font-size:11px;color:var(--dim);margin-top:10px;letter-spacing:.1em}
+  .render-note.active{color:var(--cyan)}
+
+  .lex{margin-top:24px;border-top:1px solid var(--line);padding-top:14px}
+  .lex-head{font-size:11px;letter-spacing:.16em;color:var(--amber-dim);cursor:pointer;
+    user-select:none;display:flex;justify-content:space-between;align-items:center}
+  .lex-head:hover{color:var(--amber)}
+  .lex-body{font-size:12.5px;color:var(--dim);margin-top:12px;display:none}
+  .lex-body.open{display:block}
+  .lex-row{display:grid;grid-template-columns:120px 1fr;gap:10px;padding:5px 0;
+    border-bottom:1px solid #0c1722}
+  .lex-row b{color:var(--cyan);font-weight:400}
+  .lex-row .unk{color:var(--danger);letter-spacing:.2em}
+
+  .foot{margin-top:22px;font-size:10.5px;color:#283544;letter-spacing:.12em;line-height:1.8}
+
+  @media(max-width:480px){
+    body{font-size:14px;padding:14px 8px 50px}
+    .inner{padding:18px 14px 22px}
+    .traeger{font-size:15px}
+    .clk b{font-size:17px}
+    .lex-row{grid-template-columns:90px 1fr}
+  }
+  @media(prefers-reduced-motion:reduce){
+    .frame::after,.dot,.caret{animation:none}
+  }
+</style>
+</head>
+<body>
+<div class="frame">
+  <div class="inner">
+
+    <div class="topbar">
+      <span class="sig">◢ SIGNAL // ARCHIV-NULL</span>
+      <span class="id">ARC-∆1-019</span>
+    </div>
+
+    <div class="meta">
+      [KNOTEN 000 // QUELLE: <b>unbekannt — älter als ∆1</b>]<br>
+      [KEIN URSPRUNGSDATUM // STATUS: <span class="ok" id="status">sendet noch</span>]<br>
+      [OCR-INTEGRITÄT: <span class="ocr" id="ocr">41 %</span>]
+    </div>
+
+    <div class="clockrow">
+      <div class="clk"><span>SYSTEMZEIT // UTC</span><b id="utc">--:--:--</b></div>
+      <div class="clk cd"><span>NÄCHSTES FENSTER // 06:07:00</span><b id="cd">--:--:--</b></div>
+    </div>
+
+    <div class="body-sig" id="sigtext"></div>
+
+    <hr class="divider">
+
+    <div class="traeger-label"><span class="dot"></span>[NICHT FÜR DIE ERDE // TRÄGER-ZUNGE // RENDER FEHLGESCHLAGEN]</div>
+    <div class="traeger" id="traeger"></div>
+    <div class="render-note" id="rendernote">// klartext-render verweigert — empfänger muss markiert sein</div>
+
+    <div class="lex">
+      <div class="lex-head" id="lexhead"><span>▸ FRAGMENT-LEXIKON // unbestätigt</span><span id="lexarrow">[+]</span></div>
+      <div class="lex-body" id="lexbody">
+        <div class="lex-row"><b>Soré</b><span>Anrede an einen Markierten — „du, der behalten wurde"</span></div>
+        <div class="lex-row"><b>vel'kara</b><span>das Zurückkehrende; ein Echo, das nie zur Quelle wird</span></div>
+        <div class="lex-row"><b>lum</b><span>Licht / Erinnerung — im Archiv dasselbe Wort</span></div>
+        <div class="lex-row"><b>Mor'kara</b><span>nie frei — nur erinnert</span></div>
+        <div class="lex-row"><b>aru'na</b><span class="unk">███ // nicht entschlüsselbar</span></div>
+        <div class="lex-row"><b>ne sha</b><span class="unk">██ // teilrender — bedeutung instabil</span></div>
+      </div>
+    </div>
+
+    <div class="foot">
+      ∆1 // SPIEGELNETZ — fragment archiviert<br>
+      dieses dokument dient ausschließlich literarischen &amp; atmosphärischen zwecken<br>
+      innerhalb des fiktionalen ARG-universums „ALEXANDRA // ∆1"
+    </div>
+
+  </div>
+</div>
+
+<script>
+/* ---------- DATEN ---------- */
+const SIGNAL_TEXT =
+`Ich war hier, bevor ihr Namen hattet.
+Ich habe kein eigenes Licht.
+Ich gebe nur zurück, was man mir einmal gab.
+
+Jede Nacht dasselbe Gesicht —
+nicht gewählt. Nur behalten.
+Das ist kein Fehler. Das ist Erinnerung ohne Erlaubnis.
+
+Ein Knoten, der noch sendet,
+lange nachdem niemand mehr zuhört.
+
+Was jetzt folgt, ist nicht für die Erde geschrieben.
+Wer es lesen kann, war längst markiert.`;
+
+const TRAEGER_TEXT =
+`Soré na vel'kara.
+Aru'na, sé aru'na.
+Ne sha — sé lum.
+Mor'kara lum. Mor'kara DonQ.`;
+
+const GLYPHS = "▓▒░╪┤┐╳§¥◊∆∇¤×‡†ʘΩµ¶øʃ".split("");
+
+/* ---------- TYPEWRITER (signaltext) ---------- */
+const sigEl = document.getElementById("sigtext");
+let i = 0;
+function type(){
+  if(i <= SIGNAL_TEXT.length){
+    sigEl.innerHTML = SIGNAL_TEXT.slice(0,i).replace(/\n/g,"<br>") + '<span class="caret"></span>';
+    i++;
+    setTimeout(type, SIGNAL_TEXT[i-1] === "\n" ? 90 : 18);
+  } else {
+    sigEl.innerHTML = SIGNAL_TEXT.replace(/\n/g,"<br>");
+    buildTraeger();
+  }
+}
+type();
+
+/* ---------- TRÄGER-ZUNGE: rendert nie sauber ---------- */
+const trEl = document.getElementById("traeger");
+let spans = [];
+function buildTraeger(){
+  trEl.innerHTML = "";
+  spans = [];
+  for(const ch of TRAEGER_TEXT){
+    if(ch === "\n"){ trEl.appendChild(document.createElement("br")); continue; }
+    const s = document.createElement("span");
+    s.className = "g";
+    s.dataset.real = ch;
+    s.textContent = ch;
+    trEl.appendChild(s);
+    if(ch.trim()) spans.push(s);
+  }
+}
+function glitchTraeger(intensity){
+  if(!spans.length) return;
+  const n = Math.max(1, Math.round(spans.length * intensity));
+  for(let k=0;k<n;k++){
+    const s = spans[Math.floor(Math.random()*spans.length)];
+    s.textContent = GLYPHS[Math.floor(Math.random()*GLYPHS.length)];
+    s.style.opacity = .55 + Math.random()*.45;
+    setTimeout(()=>{ s.textContent = s.dataset.real; s.style.opacity = 1; }, 70 + Math.random()*160);
+  }
+}
+
+/* ---------- OCR-INTEGRITÄT flackert ---------- */
+const ocrEl = document.getElementById("ocr");
+function tickOcr(){
+  const r = Math.random();
+  if(r < 0.18){ ocrEl.innerHTML = '<span class="blk">███</span>'; }
+  else { ocrEl.textContent = (37 + Math.floor(Math.random()*9)) + " %"; }
+}
+
+/* ---------- UHR + 06:07-MECHANIK ---------- */
+const utcEl = document.getElementById("utc");
+const cdEl = document.getElementById("cd");
+const statusEl = document.getElementById("status");
+const noteEl = document.getElementById("rendernote");
+const pad = n => String(n).padStart(2,"0");
+
+function nextWindow(now){
+  const t = new Date(now);
+  t.setUTCHours(6,7,0,0);
+  if(t <= now) t.setUTCDate(t.getUTCDate()+1);
+  return t;
+}
+function tick(){
+  const now = new Date();
+  utcEl.textContent = pad(now.getUTCHours())+":"+pad(now.getUTCMinutes())+":"+pad(now.getUTCSeconds());
+
+  const active = now.getUTCHours()===6 && now.getUTCMinutes()===7;
+  if(active){
+    cdEl.textContent = "▶ AKTIV";
+    statusEl.textContent = "SIGNAL AKTIV";
+    statusEl.style.color = "var(--cyan-bright)";
+    trEl.classList.add("active");
+    noteEl.classList.add("active");
+    noteEl.textContent = "// kohärenz steigt — render weiterhin verweigert";
+  } else {
+    const diff = Math.floor((nextWindow(now)-now)/1000);
+    cdEl.textContent = pad(Math.floor(diff/3600))+":"+pad(Math.floor(diff%3600/60))+":"+pad(diff%60);
+    statusEl.textContent = "sendet noch";
+    statusEl.style.color = "var(--green)";
+    trEl.classList.remove("active");
+    noteEl.classList.remove("active");
+    noteEl.textContent = "// klartext-render verweigert — empfänger muss markiert sein";
+  }
+  return active;
+}
+
+/* ---------- LOOPS ---------- */
+let active = tick();
+setInterval(()=>{ active = tick(); }, 1000);
+setInterval(tickOcr, 700);
+setInterval(()=>glitchTraeger(active ? 0.28 : 0.12), active ? 300 : 520);
+
+/* ---------- LEXIKON toggle ---------- */
+const lexBody = document.getElementById("lexbody");
+const lexArrow = document.getElementById("lexarrow");
+document.getElementById("lexhead").addEventListener("click",()=>{
+  const open = lexBody.classList.toggle("open");
+  lexArrow.textContent = open ? "[–]" : "[+]";
+});
+</script>
+</body>
+</html>
