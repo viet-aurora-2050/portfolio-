@@ -1,0 +1,35 @@
+# Nicht-geheime Bot-Konfiguration. API-Keys gehoeren NIEMALS hier rein - siehe .env.example.
+
+# Nur diese Produkte werden je gehandelt. Jede Order fuer ein Produkt ausserhalb
+# dieser Liste wird vom Bot hart abgelehnt, unabhaengig davon, was die Strategie sagt.
+whitelist:
+  - BTC-USD
+  - ETH-USD
+
+# Harte Obergrenze pro einzelner Kauforder in USD. Wird nie ueberschritten,
+# auch wenn die Strategie mehr vorschlaegt oder der Kontostand hoeher ist.
+max_amount_usd_per_trade: 25
+
+# Maximale Anzahl gleichzeitig offener Positionen ueber alle Produkte hinweg.
+max_open_positions: 3
+
+# Absicherung bestehender Positionen (bezogen auf den Einstiegspreis).
+stop_loss_pct: 0.08
+take_profit_pct: 0.15
+
+# Trendfolge-Strategie: gleitende Durchschnitte + RSI.
+ma_short_period: 9
+ma_long_period: 21
+rsi_period: 14
+rsi_oversold: 30
+rsi_overbought: 70
+
+# Coinbase-Candle-Aufloesung (siehe Coinbase Advanced Trade API Doku fuer gueltige Werte).
+candle_granularity: FIFTEEN_MINUTE
+
+# Wie oft der Bot einen Handelszyklus durchlaeuft.
+poll_interval_seconds: 300
+
+# Sicherheitsschalter: true = keine echten Orders, nur Logging/Simulation.
+# Explizit auf false setzen, um mit echtem Geld zu handeln.
+dry_run: true
