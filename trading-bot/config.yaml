@@ -33,3 +33,13 @@ poll_interval_seconds: 300
 # Sicherheitsschalter: true = keine echten Orders, nur Logging/Simulation.
 # Explizit auf false setzen, um mit echtem Geld zu handeln.
 dry_run: true
+
+# Gewinn-Benachrichtigung (Human-in-the-loop). Der Bot zieht NIE selbst Geld ab -
+# er meldet sich per Telegram, wenn sich eine manuelle Auszahlung lohnen koennte.
+growth_notify:
+  enabled: false
+  # Schwelle in USD Gewinn gegenueber dem Start-Kapital, ab der benachrichtigt wird.
+  profit_threshold_usd: 50
+  # Mindestabstand zwischen zwei Benachrichtigungen, um Spam zu vermeiden.
+  renotify_cooldown_hours: 24
+

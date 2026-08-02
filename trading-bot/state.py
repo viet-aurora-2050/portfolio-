@@ -7,6 +7,7 @@ from dataclasses import asdict, dataclass
 from datetime import datetime, timezone
 
 DEFAULT_STATE_PATH = os.path.join(os.path.dirname(__file__), "state", "positions.json")
+DEFAULT_GROWTH_PATH = os.path.join(os.path.dirname(__file__), "state", "growth.json")
 
 
 @dataclass
@@ -54,3 +55,50 @@ class StateStore:
 
     def all(self):
         return dict(self.positions)
+
+
+class GrowthState:
+    """Verfolgt das Kapital-Baseline und wann zuletzt eine Gewinn-Benachrichtigung
+    verschickt wurde, damit der Bot nicht bei jedem Zyklus erneut anstupst."""
+
+    def __init__(self, path=DEFAULT_GROWTH_PATH):
+        self.path = path
+        os.makedirs(os.path.dirname(path), exist_ok=True)
+        self._data = self._load()
+
+    def _load(self):
+        if not os.path.exists(self.path):
+            return {"baseline_usd": None, "last_notified_at": None, "last_notified_total_usd": None}
+        with open(self.path, "r") as f:
+            return json.load(f)
+
+    def _save(self):
+        with open(self.path, "w") as f:
+            json.dump(self._data, f, indent=2)
+
+    def ensure_baseline(self, current_total_usd):
+        """Setzt die Baseline beim allerersten Lauf auf das aktuelle Kapital,
+        falls noch keine existiert. Aendert eine einmal gesetzte Baseline nicht."""
+        if self._data["baseline_usd"] is None:
+            self._data["baseline_usd"] = current_total_usd
+            self._save()
+        return self._data["baseline_usd"]
+
+    @property
+    def baseline_usd(self):
+        return self._data["baseline_usd"]
+
+    @property
+    def last_notified_total_usd(self):
+        return self._data["last_notified_total_usd"]
+
+    def record_notification(self, current_total_usd):
+        self._data["last_notified_at"] = datetime.now(timezone.utc).isoformat()
+        self._data["last_notified_total_usd"] = current_total_usd
+        self._save()
+
+    def hours_since_last_notification(self):
+        if self._data["last_notified_at"] is None:
+            return None
+        last = datetime.fromisoformat(self._data["last_notified_at"])
+        return (datetime.now(timezone.utc) - last).total_seconds() / 3600

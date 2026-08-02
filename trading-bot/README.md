@@ -74,6 +74,47 @@ Der Bot eroeffnet dann **keine neuen** Positionen mehr, ueberwacht aber weiterhi
 bestehende offene Positionen fuer Stop-Loss/Take-Profit. `STOP`-Datei loeschen,
 um wieder normal zu starten.
 
+## Gewinn-Benachrichtigung statt Auto-Auszahlung (Human-in-the-loop)
+
+Der Bot kann selbst **kein** Geld transferieren oder auszahlen - dafuer gibt es
+zwei Gruende, die nichts mit einer Design-Vorliebe zu tun haben:
+
+1. **Fiat-Auszahlungen** (Bank/SEPA) bietet Coinbase grundsaetzlich **nicht**
+   per API an - das ist eine regulatorische Einschraenkung von Coinbase selbst.
+   Das geht nur manuell in der Coinbase-App/-Website, unabhaengig davon, was
+   dieser Bot tut.
+2. **Krypto-Sends** an externe Adressen laufen ueber eine ganz andere, aeltere
+   Coinbase-API (nicht die Advanced-Trade-API, die dieser Bot fuers Handeln
+   nutzt) und verlangen bei aktivem 2FA einen **live** 2FA-Code pro Transaktion.
+   Echte, stille Vollautomatisierung ist also selbst mit vollen Rechten technisch
+   nicht vorgesehen, solange 2FA aktiv ist (was du aus Sicherheitsgruenden
+   beibehalten solltest).
+
+Stattdessen: `growth_notify` in `config.yaml` aktivieren. Der Bot verfolgt dann
+den Gesamtwert deines Accounts (USD-Guthaben + offene Positionen zu aktuellem
+Kurs), setzt beim allerersten Lauf eine Baseline, und schickt dir per Telegram
+eine Nachricht, sobald der Gewinn gegenueber der Baseline `profit_threshold_usd`
+uebersteigt (mit `renotify_cooldown_hours` gegen Spam). Du entscheidest dann
+selbst, ob und wie viel du auszahlst.
+
+Einrichtung:
+
+1. In Telegram bei `@BotFather` einen neuen Bot anlegen (`/newbot`), Token
+   kopieren.
+2. Dem neuen Bot einmal eine beliebige Nachricht schicken.
+3. `https://api.telegram.org/bot<TOKEN>/getUpdates` im Browser oder per curl
+   aufrufen, `"chat":{"id": ...}` ablesen.
+4. `TELEGRAM_BOT_TOKEN` und `TELEGRAM_CHAT_ID` in `.env` eintragen.
+5. In `config.yaml`: `growth_notify.enabled: true` und `profit_threshold_usd`
+   nach Wunsch setzen.
+
+Falls du danach doch Krypto per API versenden willst: das erfordert einen
+separaten, aeltereren Coinbase-API-Key mit `send`-Berechtigung (v2 Wallet-API,
+nicht die hier verwendete Advanced-Trade-API) und ist bewusst nicht Teil dieses
+Bots - sprich mich an, falls du das trotz der 2FA-Einschraenkung zusaetzlich
+willst, dann bauen wir das als eigenen, klar abgegrenzten Schritt mit expliziter
+Bestaetigung pro Auszahlungsadresse.
+
 ## Dauerbetrieb (optional)
 
 Fuer echten Dauerbetrieb z.B. als systemd-Service oder in `screen`/`tmux`

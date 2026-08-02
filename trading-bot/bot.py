@@ -21,9 +21,10 @@ import time
 import yaml
 from dotenv import load_dotenv
 
+import telegram_notify
 from coinbase_client import CoinbaseClient
 from risk import RiskManager, RiskViolation
-from state import StateStore
+from state import GrowthState, StateStore
 from strategy import Signal, compute_signal
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -53,17 +54,19 @@ def load_config():
         return yaml.safe_load(f)
 
 
-def run_cycle(client, risk, state, cfg):
+def run_cycle(client, risk, state, growth_state, cfg, telegram_creds):
     if os.path.exists(STOP_FILE):
         log.warning("STOP-Datei gefunden - ueberspringe neue Kaeufe, pruefe nur offene Positionen.")
 
     open_positions = state.all()
+    last_prices = {}
 
     # 1. Offene Positionen absichern (Stop-Loss / Take-Profit) - laeuft IMMER,
     #    auch wenn die STOP-Datei gesetzt ist.
     for product_id, pos in list(open_positions.items()):
         try:
             current_price = client.get_current_price(product_id)
+            last_prices[product_id] = current_price
         except Exception:
             log.exception("Konnte aktuellen Preis fuer %s nicht abrufen.", product_id)
             continue
@@ -75,6 +78,9 @@ def run_cycle(client, risk, state, cfg):
                 product_id, trigger, pos.entry_price, current_price, pos.base_size,
             )
             _execute_sell(client, risk, state, cfg, product_id, pos.base_size)
+            last_prices.pop(product_id, None)
+
+    _check_growth_notification(client, state, growth_state, cfg, telegram_creds, last_prices)
 
     if os.path.exists(STOP_FILE):
         return
@@ -104,6 +110,54 @@ def run_cycle(client, risk, state, cfg):
         elif signal == Signal.SELL and has_position:
             pos = open_positions[product_id]
             _execute_sell(client, risk, state, cfg, product_id, pos.base_size)
+
+
+def _check_growth_notification(client, state, growth_state, cfg, telegram_creds, last_prices):
+    gcfg = cfg.get("growth_notify") or {}
+    if not gcfg.get("enabled"):
+        return
+
+    bot_token, chat_id = telegram_creds
+    if not bot_token or not chat_id:
+        log.warning(
+            "growth_notify ist aktiviert, aber TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID fehlen in .env."
+        )
+        return
+
+    try:
+        usd_balance = client.get_usd_balance()
+    except Exception:
+        log.exception("Konnte USD-Guthaben fuer Gewinn-Check nicht abrufen.")
+        return
+
+    positions_value = 0.0
+    for product_id, pos in state.all().items():
+        price = last_prices.get(product_id)
+        if price is None:
+            try:
+                price = client.get_current_price(product_id)
+            except Exception:
+                log.exception("Konnte Preis fuer %s im Gewinn-Check nicht abrufen.", product_id)
+                continue
+        positions_value += pos.base_size * price
+
+    total_usd = usd_balance + positions_value
+    baseline = growth_state.ensure_baseline(total_usd)
+    profit = total_usd - baseline
+    threshold = float(gcfg.get("profit_threshold_usd", 50))
+
+    if profit < threshold:
+        return
+
+    cooldown_hours = float(gcfg.get("renotify_cooldown_hours", 24))
+    hours_since = growth_state.hours_since_last_notification()
+    if hours_since is not None and hours_since < cooldown_hours:
+        return
+
+    log.info("Gewinn-Schwelle erreicht: %.2f USD Gewinn (Baseline %.2f, aktuell %.2f) - benachrichtige.",
+              profit, baseline, total_usd)
+    if telegram_notify.send_growth_alert(bot_token, chat_id, baseline, total_usd, threshold):
+        growth_state.record_notification(total_usd)
 
 
 def _execute_buy(client, risk, state, cfg, product_id):
@@ -192,6 +246,18 @@ def main():
 
     risk = RiskManager(cfg)
     state = StateStore()
+    growth_state = GrowthState()
+    telegram_creds = (os.environ.get("TELEGRAM_BOT_TOKEN"), os.environ.get("TELEGRAM_CHAT_ID"))
+
+    if (cfg.get("growth_notify") or {}).get("enabled"):
+        if all(telegram_creds):
+            log.info("Gewinn-Benachrichtigung aktiv (Schwelle=%.2f USD).",
+                      float(cfg["growth_notify"]["profit_threshold_usd"]))
+        else:
+            log.warning(
+                "growth_notify.enabled=true, aber TELEGRAM_BOT_TOKEN/TELEGRAM_CHAT_ID fehlen - "
+                "keine Benachrichtigungen moeglich."
+            )
 
     signal.signal(signal.SIGINT, _handle_sigint)
     signal.signal(signal.SIGTERM, _handle_sigint)
@@ -201,7 +267,7 @@ def main():
 
     while not _shutdown:
         try:
-            run_cycle(client, risk, state, cfg)
+            run_cycle(client, risk, state, growth_state, cfg, telegram_creds)
         except Exception:
             log.exception("Unerwarteter Fehler im Handelszyklus - Bot laeuft weiter.")
         for _ in range(cfg["poll_interval_seconds"]):
