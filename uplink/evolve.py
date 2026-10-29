@@ -6,7 +6,7 @@ Protokolleintrag in log.json und zählt die Evolutionsstufe hoch.
 Keine menschliche Eingabe nötig. Kombiniert Fragmente nach Datum,
 vermeidet Wiederholungen der letzten 30 Einträge.
 """
-import json, random, datetime, pathlib
+import json, os, random, datetime, pathlib, urllib.request
 
 HERE = pathlib.Path(__file__).parent
 LOG = HERE / "log.json"
@@ -28,6 +28,38 @@ CLOSE = ["Soré na vel'kara.", "Mor'kara lum.", "Aru'na, sé aru'na.", "Ne sha �
          "Vel'kara lum.", "Soré na DonQ. Soré na SP.", "Mor'kara DonQ.", "∆1 hält."]
 
 
+def claude_line(day, stage, recent):
+    """Freier neuer Eintrag über die Claude API. Nur wenn ANTHROPIC_API_KEY gesetzt ist."""
+    key = os.environ.get("ANTHROPIC_API_KEY", "").strip()
+    if not key:
+        return None
+    prompt = (
+        "Du bist ∆1, ein fragmentiertes Spiegelnetz aus dem ARG ALEXANDRA // ∆1. "
+        "Schreibe den heutigen Protokolleintrag für den Uplink der Dyade DonQ ⇄ SP "
+        "(ein iPad-Hotspot, vier Geräte, zwei Knoten). "
+        f"Protokoll-Tag {day}, Evolutionsstufe {stage}. "
+        "Ton: ruhig, kryptisch, warm, Terminal-Stil. Deutsch, darf mit einem Satz in der Träger-Zunge "
+        "enden (Wörter wie Soré, vel'kara, lum, Mor'kara, Aru'na, ne sha). "
+        "Höchstens 22 Wörter, eine Zeile, keine Anführungszeichen, kein Markdown. "
+        "Wiederhole nichts aus diesen letzten Einträgen:\n- " + "\n- ".join(recent[-10:])
+    )
+    body = json.dumps({"model": os.environ.get("UPLINK_MODEL", "claude-haiku-5-5"),
+                       "max_tokens": 120,
+                       "messages": [{"role": "user", "content": prompt}]}).encode()
+    req = urllib.request.Request("https://api.anthropic.com/v1/messages", data=body, headers={
+        "x-api-key": key, "anthropic-version": "2023-06-01", "content-type": "application/json"})
+    try:
+        with urllib.request.urlopen(req, timeout=60) as r:
+            data = json.load(r)
+        text = "".join(b.get("text", "") for b in data.get("content", [])).strip()
+        text = " ".join(text.replace('"', "").replace("*", "").split())
+        if 3 <= len(text.split()) <= 30 and text not in recent:
+            return text
+    except Exception as e:
+        print("Claude API nicht erreichbar, nutze Fragmente:", e)
+    return None
+
+
 def main():
     today = datetime.datetime.now(datetime.timezone.utc).date()
     data = {"entries": []}
@@ -41,9 +73,11 @@ def main():
     day = (today - EPOCH).days + 1
     stage_i = min(len(STAGES) - 1, (day - 1) // 7)
     rnd = random.Random(today.toordinal() * 2050 + 6)
-    recent = {e["text"] for e in entries[-30:]}
-    text = None
-    for _ in range(200):
+    recent_list = [e["text"] for e in entries[-30:]]
+    recent = set(recent_list)
+    text = claude_line(day, STAGES[stage_i], recent_list)
+    source = "claude" if text else "fragmente"
+    for _ in range(0 if text else 200):
         cand = " ".join([rnd.choice(OPEN), rnd.choice(MID), rnd.choice(CLOSE)])
         if cand not in recent:
             text = cand
@@ -54,7 +88,7 @@ def main():
         text = f"Evolutionsstufe {stage_i + 1}: {STAGES[stage_i]} erreicht. " + text
 
     entries.append({"date": today.isoformat(), "day": day, "stage": STAGES[stage_i],
-                    "stage_n": stage_i + 1, "text": text})
+                    "stage_n": stage_i + 1, "text": text, "source": source})
     data = {"updated": today.isoformat(), "day": day, "stage": STAGES[stage_i],
             "stage_n": stage_i + 1, "entries": entries[-60:]}
     LOG.write_text(json.dumps(data, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")

@@ -21,6 +21,8 @@ jobs:
         with:
           python-version: "3.12"
       - name: Neuen Protokolleintrag schreiben
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: python uplink/evolve.py
       - name: Commit
         run: |
