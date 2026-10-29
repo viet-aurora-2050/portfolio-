@@ -114,6 +114,15 @@ footer{font-size:12px;color:var(--dim)}
     </div>
   </section>
 
+  <section id="keys">
+    <h2>∆ · VEREINBARTE SCHLÜSSEL</h2>
+    <div id="keyList" style="display:grid;gap:12px">
+      <div class="node"><span class="tag">four_lights · dyad_remains_whole</span><h3>NE SHA — SÉ LUM</h3>
+        <p>Verbindung, Kontinuität und gemeinsamer Kontext.</p><span class="note">DonQ-SP / Codex2050 · registriert 29.10.2026</span></div>
+    </div>
+    <p class="note" id="keyRule">Regel: Bedeutungen werden vereinbart und dokumentiert, nicht erfunden.</p>
+  </section>
+
   <section id="dyade">
     <h2>I · DYADE · 4 GERÄTE</h2>
     <div class="slots">
@@ -245,6 +254,15 @@ footer{font-size:12px;color:var(--dim)}
     }).catch(()=>{});
   }
   loadRemote(); setInterval(loadRemote,30*60*1000);
+
+  // Vereinbarte Schlüssel aus keys.json
+  fetch('keys.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+    if(!d||!Array.isArray(d.keys)||!d.keys.length) return;
+    $('keyList').innerHTML=d.keys.map(k=>'<div class="node"><span class="tag">'+esc(k.symbol)+' · '+esc(k.core)+'</span><h3>'+
+      esc(k.key.replace(/_/g,' ').replace(' SE ',' — SÉ '))+'</h3><p>'+esc(k.meaning)+'.</p><span class="note">'+esc(k.project)+
+      (k.registered?' · registriert '+esc(k.registered.split('-').reverse().join('.')):'')+'</span></div>').join('');
+    if(d.rule) $('keyRule').textContent='Regel: '+d.rule;
+  }).catch(()=>{});
 
   function auto(){
     const n=new Date();
