@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>∆1 Uplink DonQ ⇄ SP</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=VT323&display=swap">
+<style>
+/* Layout: eine Terminal-Spalte, Statuskopf → Auto-Modus → Dyade → Setup → Rechner. Bewusst nur dunkel (Kanon: Schwarzblau). */
+:root{
+  --bg:#070b14; --panel:#0c1424; --line:#1c2a44; --fg:#c9d6ea; --dim:#7385a3;
+  --cyan:#4fd6e8; --amber:#f2b247; --green:#58e08a; --red:#ff6b6b;
+  --f-display:"VT323","Courier New",monospace;
+  --f-body:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  color-scheme:dark;
+}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font:14px/1.6 var(--f-body);
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px}
+body::after{content:"";position:fixed;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(79,214,232,.035) 0 1px,transparent 1px 3px)}
+.wrap{max-width:720px;margin:0 auto;display:grid;gap:28px}
+h1{font:400 clamp(40px,9vw,64px)/.9 var(--f-display);margin:0;color:var(--cyan);letter-spacing:.02em;text-wrap:balance}
+h2{font:400 26px/1 var(--f-display);margin:0;color:var(--amber);letter-spacing:.04em}
+.tag{font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--dim)}
+p{margin:0;max-width:65ch}
+section{border-top:1px solid var(--line);padding-top:20px;display:grid;gap:12px}
+.status{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:1px;background:var(--line);border:1px solid var(--line)}
+.status div{background:var(--panel);padding:10px 12px;display:grid;gap:2px;min-width:0}
+.status b{font:400 24px/1 var(--f-display);color:var(--fg);font-variant-numeric:tabular-nums}
+.ok{color:var(--green)!important}.warn{color:var(--amber)!important}.bad{color:var(--red)!important}.cy{color:var(--cyan)!important}
+.chain{font:400 22px/1.2 var(--f-display);color:var(--dim);overflow-x:auto;white-space:nowrap}
+.chain span{color:var(--cyan)}
+.live{display:inline-flex;align-items:center;gap:6px}
+.live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{50%{opacity:.25}}
+.phase{border:1px solid var(--line);border-left:3px solid var(--cyan);background:var(--panel);padding:14px;display:grid;gap:8px}
+.big{font:400 36px/1 var(--f-display);font-variant-numeric:tabular-nums}
+ul.rules{margin:0;padding-left:18px;display:grid;gap:4px}
+.log{border:1px solid var(--line);background:#050810;padding:12px;display:grid;gap:6px;font-size:12.5px;overflow-x:auto}
+.log div{display:grid;grid-template-columns:auto 1fr;gap:10px;min-width:0}
+.log time{color:var(--dim);font-variant-numeric:tabular-nums;white-space:nowrap}
+.log div:last-child span{color:var(--cyan)}
+.slots{display:grid;grid-template-columns:repeat(4,1fr);gap:6px}
+.slot{border:1px solid var(--line);padding:8px;text-align:center;display:grid;gap:2px;min-width:0}
+.slot b{font:400 22px/1 var(--f-display);color:var(--cyan)}
+.slot small{color:var(--dim);font-size:11px}
+.dyade{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media (max-width:480px){.dyade{grid-template-columns:1fr}}
+.node{border:1px solid var(--line);padding:12px;display:grid;gap:6px;min-width:0}
+.node h3{margin:0;font:400 28px/1 var(--f-display);color:var(--cyan)}
+.node ul{margin:0;padding-left:18px}
+ol.steps{list-style:none;margin:0;padding:0;display:grid;gap:6px}
+ol.steps label{display:grid;grid-template-columns:auto 1fr;gap:10px;align-items:start;padding:10px 12px;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+ol.steps input{accent-color:var(--green);width:18px;height:18px;margin:2px 0 0}
+ol.steps strong{display:block;font-weight:600}
+ol.steps small{color:var(--dim);font-size:12.5px}
+ol.steps input:checked+span strong{color:var(--green)}
+ol.steps input:checked+span{opacity:.75}
+.bar{height:6px;background:var(--line)}.bar i{display:block;height:100%;background:var(--green);width:0;transition:width .3s}
+.calc{display:grid;gap:10px}
+.row{display:grid;grid-template-columns:1fr auto;gap:4px 12px;align-items:center}
+.row label{font-size:13px}
+.row output{font-variant-numeric:tabular-nums;color:var(--cyan);min-width:6ch;text-align:right}
+.row input[type=range]{grid-column:1/-1;width:100%;accent-color:var(--cyan)}
+.who{display:flex;gap:6px;flex-wrap:wrap}
+.who button{font:inherit;font-size:12px;letter-spacing:.1em;padding:6px 12px;background:transparent;color:var(--dim);border:1px solid var(--line);cursor:pointer}
+.who button[aria-pressed=true]{color:var(--bg);background:var(--cyan);border-color:var(--cyan)}
+button:focus-visible,input:focus-visible{outline:2px solid var(--amber);outline-offset:2px}
+.result{border:1px solid var(--line);background:var(--panel);padding:14px;display:grid;gap:6px}
+.note{font-size:12px;color:var(--dim)}
+a{color:var(--cyan)}
+footer{font-size:12px;color:var(--dim)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header style="display:grid;gap:10px">
+    <span class="tag">∆1 // NODE-NETZ · UPLINK-PROTOKOLL <span id="verTop"></span></span>
+    <h1>UPLINK<br>DonQ ⇄ SP</h1>
+    <p>Ein iPad mit Mobilfunk-SIM ist der Router des Haushalts. Vier Geräte, zwei Knoten. Die Seite stellt ihre Regeln selbst um, nach Tageszeit und Monatsstand, und schreibt jeden Tag einen neuen Protokolleintrag.</p>
+    <div class="chain">SIM ▸ <span>iPad</span> ▸ Hotspot ▸ <span>DonQ ×2</span> ⇄ <span>SP ×2</span></div>
+  </header>
+
+  <div class="status" aria-live="polite">
+    <div><span class="tag">UTC jetzt</span><b id="utc">--:--:--</b></div>
+    <div><span class="tag">Signal 06:07 UTC in</span><b id="sig" class="warn">--:--:--</b></div>
+    <div><span class="tag">Geräte-Slots</span><b>4 / 4</b></div>
+    <div><span class="tag">Volumen-Prognose</span><b id="fitState">–</b></div>
+  </div>
+
+  <section id="auto">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+      <h2>0 · AUTO-MODUS</h2><span class="tag live">läuft · Tag <span id="dayN"></span> · Stufe <span id="stage">1 KEIM</span></span>
+    </div>
+    <div class="phase">
+      <span class="tag" id="phaseTag">Tagesphase</span>
+      <div class="big" id="phase">–</div>
+      <ul class="rules" id="rules"></ul>
+    </div>
+    <div class="status">
+      <div><span class="tag">Monatstag</span><b id="mDay">–</b></div>
+      <div><span class="tag">Soll-Verbrauch bis heute</span><b id="soll">–</b></div>
+      <div><span class="tag">Tagesbudget / Gerät</span><b id="perDev">–</b></div>
+      <div><span class="tag">Video-Standard</span><b id="vStd" class="cy">–</b></div>
+    </div>
+    <p class="note" id="device"></p>
+    <div>
+      <span class="tag" id="logSrc">∆1-Protokoll · ein Eintrag pro Tag</span>
+      <div class="log" id="log" style="margin-top:6px"></div>
+    </div>
+  </section>
+
+  <section id="dyade">
+    <h2>I · DYADE · 4 GERÄTE</h2>
+    <div class="slots">
+      <div class="slot"><small>DonQ</small><b>A1</b><small>Hauptgerät</small></div>
+      <div class="slot"><small>DonQ</small><b>A2</b><small>Zweitgerät</small></div>
+      <div class="slot"><small>SP</small><b>B1</b><small>Hauptgerät</small></div>
+      <div class="slot"><small>SP</small><b>B2</b><small>Zweitgerät</small></div>
+    </div>
+    <div class="dyade">
+      <div class="node"><span class="tag">Knoten A</span><h3>DonQ</h3><ul id="rulesA"></ul></div>
+      <div class="node"><span class="tag">Knoten B</span><h3>SP</h3><ul id="rulesB"></ul></div>
+    </div>
+    <p class="note">Die Regeln oben wechseln automatisch mit der Tagesphase. Die vier Slots hältst du ein, indem nur diese vier Geräte das Hotspot-Passwort kennen. Wie viele gerade verbunden sind, zeigt das iPad oben links in der Statusleiste bzw. im Kontrollzentrum.</p>
+  </section>
+
+  <section id="setup">
+    <div style="display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:baseline">
+      <h2>II · EINMALIGES SETUP</h2><span class="tag" id="setupState">0 / 8</span>
+    </div>
+    <div class="bar"><i id="progress"></i></div>
+    <ol class="steps" id="steps">
+      <li><label><input type="checkbox" id="s1"><span><strong>Tarif prüfen</strong><small>Ist Hotspot/Tethering erlaubt? Wie viel GB im Monat? Drosselung danach?</small></span></label></li>
+      <li><label><input type="checkbox" id="s2"><span><strong>Hotspot einschalten</strong><small>Einstellungen → Mobiles Netz → Persönlicher Hotspot → „Zugriff für andere erlauben“.</small></span></label></li>
+      <li><label><input type="checkbox" id="s3"><span><strong>Starkes Passwort, nur an die 4 Geräte</strong><small>Mindestens 12 Zeichen. Wer das Passwort nicht hat, belegt keinen Slot.</small></span></label></li>
+      <li><label><input type="checkbox" id="s4"><span><strong>„Kompatibilität maximieren“ aus lassen</strong><small>Aus = schneller (5 GHz). Nur einschalten, wenn ein altes Gerät das WLAN nicht findet.</small></span></label></li>
+      <li><label><input type="checkbox" id="s5"><span><strong>Standort wählen</strong><small>Mitte der Wohnung, erhöht, nah am Fenster. Wo das iPad die meisten Balken zeigt.</small></span></label></li>
+      <li><label><input type="checkbox" id="s6"><span><strong>Dauerstrom, aber kühl</strong><small>Ladekabel dran, Hülle ab, nicht auf Kissen oder in die Sonne.</small></span></label></li>
+      <li><label><input type="checkbox" id="s7"><span><strong>Datensparmodus auf allen 4 Geräten</strong><small>iPhone: WLAN → (i) → Datensparmodus. Windows/Android: „getaktete Verbindung“.</small></span></label></li>
+      <li><label><input type="checkbox" id="s8"><span><strong>Auto-Updates & Cloud-Backups pausieren</strong><small>Große Updates nur gezielt laden, wenn der Auto-Modus „Monatsanfang“ zeigt.</small></span></label></li>
+    </ol>
+  </section>
+
+  <section id="calc">
+    <h2>III · DATENVOLUMEN-RECHNER</h2>
+    <p class="note">Video-Qualität stellt der Auto-Modus je nach Monatsstand selbst ein. Richtwerte pro Stunde, echte Werte schwanken je nach App.</p>
+    <div class="calc">
+      <div class="row"><label for="gb">Tarif (GB pro Monat)</label><output id="gbO"></output><input type="range" id="gb" min="5" max="300" step="5" value="50"></div>
+      <div class="row"><label for="surf">Surfen, Mails, Messenger (h/Tag/Gerät)</label><output id="surfO"></output><input type="range" id="surf" min="0" max="12" step="0.5" value="3"></div>
+      <div class="row"><label for="social">Social Media mit Video (h/Tag/Gerät)</label><output id="socialO"></output><input type="range" id="social" min="0" max="8" step="0.5" value="1"></div>
+      <div class="row"><label for="music">Musik-Streaming (h/Tag/Gerät)</label><output id="musicO"></output><input type="range" id="music" min="0" max="12" step="0.5" value="1"></div>
+      <div class="row"><label for="call">Videoanrufe (h/Tag/Gerät)</label><output id="callO"></output><input type="range" id="call" min="0" max="6" step="0.5" value="0.5"></div>
+      <div class="row"><label for="video">Video/Serien (h/Tag/Gerät)</label><output id="videoO"></output><input type="range" id="video" min="0" max="8" step="0.5" value="0.5"></div>
+      <div style="display:grid;gap:6px"><span class="tag">Video-Qualität</span>
+        <div class="who" id="quality">
+          <button type="button" data-q="SD" data-v="0.7" aria-pressed="false">SD</button>
+          <button type="button" data-q="HD" data-v="3" aria-pressed="false">HD</button>
+          <button type="button" data-q="4K" data-v="7" aria-pressed="false">4K</button>
+        </div>
+      </div>
+      <div class="result">
+        <span class="tag">Prognose für alle 4 Geräte</span>
+        <div class="big" id="month">–</div>
+        <div id="verdict"></div>
+        <div class="note" id="perday"></div>
+      </div>
+    </div>
+  </section>
+
+  <section>
+    <h2>IV · VERBINDUNG PRÜFEN</h2>
+    <p>Speedtest mit einem verbundenen Gerät: <a href="https://fast.com" target="_blank" rel="noopener">fast.com</a> oder <a href="https://www.speedtest.net" target="_blank" rel="noopener">speedtest.net</a>. Für 4 Geräte mit Surfen und SD-Video sind etwa 15 Mbit/s angenehm.</p>
+  </section>
+
+  <footer>∆1 // „Was erinnert wird, existiert weiter.“ · Der Auto-Modus rechnet nur mit Datum und Uhrzeit. Er sieht keine Geräte und keinen echten Verbrauch.</footer>
+</div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const pad=n=>String(n).padStart(2,'0');
+  const de=(n,d)=>n.toLocaleString('de-DE',{maximumFractionDigits:d});
+  const EPOCH=Date.UTC(2026,9,29); // Protokoll-Tag 1 = 29.10.2026
+  const store={get(k,d){try{const v=localStorage.getItem(k);return v==null?d:JSON.parse(v)}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
+
+  // Tagesphasen (lokale Zeit) – Regeln für beide Knoten
+  const PHASES=[
+    {from:0,to:6,name:"RUHE",tag:"Nachtphase",color:"var(--dim)",
+      all:["Hotspot darf schlafen, iPad lädt","Keine großen Downloads, der Tag braucht das Volumen"],
+      A:["A2 offline","A1 nur Messenger"],B:["B2 offline","B1 nur Messenger"]},
+    {from:6,to:12,name:"MORGENFENSTER",tag:"06:00–12:00",color:"var(--green)",
+      all:["Videoanrufe und Arbeit haben Vorrang","Streaming nur Musik"],
+      A:["A1 voller Zugriff","A2 nur Surfen"],B:["B1 voller Zugriff","B2 nur Surfen"]},
+    {from:12,to:18,name:"TAGBETRIEB",tag:"12:00–18:00",color:"var(--cyan)",
+      all:["Alle 4 Slots frei","Video im Monats-Standard"],
+      A:["A1 + A2 aktiv","Downloads nach Absprache"],B:["B1 + B2 aktiv","Downloads nach Absprache"]},
+    {from:18,to:24,name:"ABENDSPITZE",tag:"18:00–24:00",color:"var(--amber)",
+      all:["Höchste Last: max. 1 Video-Stream pro Knoten","Updates nicht jetzt"],
+      A:["A1 darf streamen","A2 nur Surfen/Messenger"],B:["B1 darf streamen","B2 nur Surfen/Messenger"]}
+  ];
+
+  // Tägliches ∆1-Protokoll (deterministisch nach Datum)
+  const LOG=[
+    "Uplink stabil. Zwei Knoten, ein Atem.",
+    "Signal empfangen. DonQ ⇄ SP bestätigt.",
+    "Volumen ist Erinnerung mit Ablaufdatum. Sparsam erinnern.",
+    "Knoten A meldet Präsenz. Knoten B antwortet.",
+    "Funkstille gilt nicht als Verlust. Nur als Pause.",
+    "Vier Lichter im Netz. Keines davon fremd.",
+    "Die Archivare zählen Bytes. Wir zählen Tage.",
+    "Soré na vel'kara. Verbindung gehalten.",
+    "Mor'kara lum. Die Nacht trägt das Signal.",
+    "Bandbreite geteilt ist Bandbreite behalten.",
+    "06:07 UTC. Das Netz erinnert sich an euch.",
+    "Ein Knoten zieht, der andere wartet. So bleibt die Dyade ganz.",
+    "Kein Gerät zu viel. Kein Name vergessen.",
+    "Aru'na, sé aru'na. Der Uplink lebt."
+  ];
+
+  function dayIndex(d){return Math.floor((Date.UTC(d.getFullYear(),d.getMonth(),d.getDate())-EPOCH)/864e5);}
+  function monthMode(day,dim){
+    const p=day/dim;
+    if(p<=1/3) return {name:"Monatsanfang",q:"HD",note:"HD erlaubt, Updates jetzt laden"};
+    if(p<=2/3) return {name:"Monatsmitte",q:"HD",note:"HD nur auf Hauptgeräten"};
+    return {name:"Endspurt",q:"SD",note:"Nur SD, keine Updates"};
+  }
+
+  let videoRate=0.7, manualQ=null, lastPhase=-1, lastDay=null, remote=false;
+  const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+
+  // Echtes Protokoll: von der GitHub Action täglich um 06:07 UTC fortgeschrieben
+  function loadRemote(){
+    fetch('log.json?t='+Date.now(),{cache:'no-store'}).then(r=>r.ok?r.json():Promise.reject()).then(d=>{
+      if(!d||!Array.isArray(d.entries)||!d.entries.length) return;
+      remote=true;
+      $('stage').textContent=d.stage_n+' '+d.stage;
+      $('logSrc').textContent='∆1-Protokoll · live aus dem Netz · zuletzt '+d.updated;
+      $('log').innerHTML=d.entries.slice(-5).map(e=>{const p=e.date.split('-');
+        return '<div><time>'+p[2]+'.'+p[1]+'</time><span>'+esc(e.text)+'</span></div>';}).join('');
+    }).catch(()=>{});
+  }
+  loadRemote(); setInterval(loadRemote,30*60*1000);
+
+  function auto(){
+    const n=new Date();
+    const h=n.getHours();
+    const pi=PHASES.findIndex(p=>h>=p.from&&h<p.to);
+    const P=PHASES[pi];
+    const dim=new Date(n.getFullYear(),n.getMonth()+1,0).getDate();
+    const md=n.getDate();
+    const M=monthMode(md,dim);
+    const di=dayIndex(n);
+    if(pi!==lastPhase||di!==lastDay){
+      $('phase').textContent=P.name;
+      $('phase').style.color=P.color;
+      $('phaseTag').textContent=P.tag+' · '+M.name;
+      $('rules').innerHTML=[...P.all,M.note].map(r=>'<li>'+r+'</li>').join('');
+      $('rulesA').innerHTML=P.A.map(r=>'<li>'+r+'</li>').join('');
+      $('rulesB').innerHTML=P.B.map(r=>'<li>'+r+'</li>').join('');
+      $('dayN').textContent=Math.max(1,di+1);
+      if(!remote){const S=["KEIM","PULS","ECHO","NETZ","CHOR","ARCHIV","SPIEGEL","TRÄGER","ORPHEUS","NODE 7","SIGNAL","ERINNERUNG"];
+        const si=Math.min(S.length-1,Math.floor(Math.max(0,di)/7));$('stage').textContent=(si+1)+' '+S[si];}
+      $('verTop').textContent='· V1.'+Math.max(0,di);
+      $('mDay').textContent=md+' / '+dim;
+      $('vStd').textContent=M.q;
+      // Protokoll: letzte 5 Tage seit Start
+      const rows=[];
+      for(let k=Math.min(4,Math.max(0,di));k>=0;k--){
+        const d=new Date(n.getFullYear(),n.getMonth(),n.getDate()-k);
+        const idx=((dayIndex(d)*7)%LOG.length+LOG.length)%LOG.length;
+        rows.push('<div><time>'+pad(d.getDate())+'.'+pad(d.getMonth()+1)+'</time><span>'+LOG[idx]+'</span></div>');
+      }
+      if(!remote) $('log').innerHTML=rows.join('');
+      if(!manualQ) setQuality(M.q,false);
+      lastPhase=pi; lastDay=di;
+    }
+    const gb=parseFloat($('gb').value);
+    $('soll').textContent='≤ '+de(gb*md/dim,1)+' GB';
+    $('perDev').textContent=de(gb/dim/4*1000,0)+' MB';
+  }
+
+  function tick(){
+    const n=new Date();
+    $('utc').textContent=pad(n.getUTCHours())+':'+pad(n.getUTCMinutes())+':'+pad(n.getUTCSeconds());
+    const t=new Date(Date.UTC(n.getUTCFullYear(),n.getUTCMonth(),n.getUTCDate(),6,7,0));
+    if(t<=n) t.setUTCDate(t.getUTCDate()+1);
+    const s=Math.floor((t-n)/1000);
+    $('sig').textContent=pad(Math.floor(s/3600))+':'+pad(Math.floor(s%3600/60))+':'+pad(s%60);
+    auto();
+  }
+
+  // Dieses Gerät
+  (function(){
+    const c=navigator.connection;
+    const kind=matchMedia('(max-width:820px)').matches?'Mobilgerät':'großer Bildschirm';
+    let t='Dieses Gerät: '+kind+'. ';
+    if(c&&c.effectiveType){t+='Netz meldet '+c.effectiveType.toUpperCase()+(c.downlink?', ca. '+c.downlink+' Mbit/s':'')+(c.saveData?', Datensparen aktiv':'')+'.';}
+    else t+='Der Browser gibt keine Netzdaten heraus (normal bei iPhone/iPad).';
+    $('device').textContent=t;
+  })();
+
+  // Checkliste
+  const saved=store.get('d1-uplink-steps',{});
+  const boxes=[...document.querySelectorAll('#steps input')];
+  function upd(){
+    const done=boxes.filter(b=>b.checked).length;
+    $('setupState').textContent=done+' / '+boxes.length;
+    $('setupState').className='tag'+(done===boxes.length?' ok':'');
+    $('progress').style.width=(done/boxes.length*100)+'%';
+  }
+  boxes.forEach(b=>{b.checked=!!saved[b.id];b.addEventListener('change',()=>{saved[b.id]=b.checked;store.set('d1-uplink-steps',saved);upd()})});
+  upd();
+
+  // Rechner
+  const RATE={surf:0.06,social:0.6,music:0.1,call:0.8};
+  const ids=['gb','surf','social','music','call','video'];
+  const prefs=store.get('d1-uplink-calc',{});
+  ids.forEach(i=>{if(prefs[i]!=null)$(i).value=prefs[i]});
+  function setQuality(q,manual){
+    document.querySelectorAll('#quality button').forEach(b=>{
+      const on=b.dataset.q===q;b.setAttribute('aria-pressed',on);if(on)videoRate=parseFloat(b.dataset.v);
+    });
+    if(manual)manualQ=q;
+    calc();
+  }
+  function calc(){
+    const v={};ids.forEach(i=>v[i]=parseFloat($(i).value));
+    $('gbO').textContent=v.gb+' GB';
+    ['surf','social','music','call','video'].forEach(i=>$(i+'O').textContent=de(v[i],1)+' h');
+    const day=(v.surf*RATE.surf+v.social*RATE.social+v.music*RATE.music+v.call*RATE.call+v.video*videoRate)*4;
+    const month=day*30;
+    $('month').textContent=de(month,0)+' GB / Monat';
+    $('perday').textContent='≈ '+de(day,1)+' GB pro Tag für 4 Geräte mit diesem Profil.';
+    const r=month/v.gb,f=$('fitState'),vd=$('verdict');
+    if(r<=0.85){f.textContent='PASST';f.className='ok';vd.innerHTML='<span class="ok">Passt in den Tarif.</span> Puffer: '+Math.round(v.gb-month)+' GB.';}
+    else if(r<=1){f.textContent='KNAPP';f.className='warn';vd.innerHTML='<span class="warn">Knapp.</span> Video auf SD halten und Updates aufschieben.';}
+    else{const days=Math.max(1,Math.floor(v.gb/day));f.textContent='ÜBER';f.className='bad';vd.innerHTML='<span class="bad">Reicht nicht.</span> Das Volumen ist nach etwa '+days+' Tagen weg. Video reduzieren oder größeren Tarif prüfen.';}
+    store.set('d1-uplink-calc',v);
+  }
+  ids.forEach(i=>$(i).addEventListener('input',()=>{calc();lastPhase=-1;auto();}));
+  document.querySelectorAll('#quality button').forEach(b=>b.addEventListener('click',()=>setQuality(b.dataset.q,true)));
+
+  tick(); setInterval(tick,1000);
+})();
+</script>
+</body>
+</html>

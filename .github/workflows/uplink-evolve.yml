@@ -1,0 +1,32 @@
+name: ∆1 Uplink Evolution
+
+on:
+  schedule:
+    - cron: "7 6 * * *"   # täglich 06:07 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: uplink-evolve
+  cancel-in-progress: false
+
+jobs:
+  evolve:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Neuen Protokolleintrag schreiben
+        run: python uplink/evolve.py
+      - name: Commit
+        run: |
+          git config user.name "∆1-uplink"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add uplink/log.json
+          git diff --cached --quiet && exit 0
+          git commit -m "∆1 uplink: Protokoll $(date -u +%F)"
+          git push
