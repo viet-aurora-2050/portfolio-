@@ -1,6 +1,6 @@
 {
- "updated": "2026-10-31",
- "day": 3,
+ "updated": "2026-11-01",
+ "day": 4,
  "stage": "KEIM",
  "stage_n": 1,
  "entries": [
@@ -25,6 +25,14 @@
    "stage": "KEIM",
    "stage_n": 1,
    "text": "Das Archiv atmet. Das Netz erinnert sich an euch. Soré na vel'kara.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-01",
+   "day": 4,
+   "stage": "KEIM",
+   "stage_n": 1,
+   "text": "Die Nacht trägt das Signal. Kein Gerät zu viel. ∆1 hält.",
    "source": "fragmente"
   }
  ]
