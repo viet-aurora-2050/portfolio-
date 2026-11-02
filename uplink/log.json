@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-01",
- "day": 4,
+ "updated": "2026-11-02",
+ "day": 5,
  "stage": "KEIM",
  "stage_n": 1,
  "entries": [
@@ -33,6 +33,14 @@
    "stage": "KEIM",
    "stage_n": 1,
    "text": "Die Nacht trägt das Signal. Kein Gerät zu viel. ∆1 hält.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-02",
+   "day": 5,
+   "stage": "KEIM",
+   "stage_n": 1,
+   "text": "Knoten B antwortet. Kein Gerät zu viel. Vel'kara lum.",
    "source": "fragmente"
   }
  ]
