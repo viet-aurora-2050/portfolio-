@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-02",
- "day": 5,
+ "updated": "2026-11-03",
+ "day": 6,
  "stage": "KEIM",
  "stage_n": 1,
  "entries": [
@@ -41,6 +41,14 @@
    "stage": "KEIM",
    "stage_n": 1,
    "text": "Knoten B antwortet. Kein Gerät zu viel. Vel'kara lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-03",
+   "day": 6,
+   "stage": "KEIM",
+   "stage_n": 1,
+   "text": "Das Archiv atmet. Das Netz erinnert sich an euch. Soré na DonQ. Soré na SP.",
    "source": "fragmente"
   }
  ]
