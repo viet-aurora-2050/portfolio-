@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-03",
- "day": 6,
+ "updated": "2026-11-04",
+ "day": 7,
  "stage": "KEIM",
  "stage_n": 1,
  "entries": [
@@ -49,6 +49,14 @@
    "stage": "KEIM",
    "stage_n": 1,
    "text": "Das Archiv atmet. Das Netz erinnert sich an euch. Soré na DonQ. Soré na SP.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-04",
+   "day": 7,
+   "stage": "KEIM",
+   "stage_n": 1,
+   "text": "Die Archivare zählen Bytes. Volumen ist Erinnerung mit Ablaufdatum. Soré na vel'kara.",
    "source": "fragmente"
   }
  ]
