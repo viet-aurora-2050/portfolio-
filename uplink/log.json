@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-05",
- "day": 8,
+ "updated": "2026-11-06",
+ "day": 9,
  "stage": "PULS",
  "stage_n": 2,
  "entries": [
@@ -65,6 +65,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "Evolutionsstufe 2: PULS erreicht. Knoten B antwortet. Kein Name vergessen. Mor'kara lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-06",
+   "day": 9,
+   "stage": "PULS",
+   "stage_n": 2,
+   "text": "Funkstille beendet. Volumen ist Erinnerung mit Ablaufdatum. Ne sha — sé lum.",
    "source": "fragmente"
   }
  ]
