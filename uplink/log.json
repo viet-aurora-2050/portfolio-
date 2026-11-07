@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-06",
- "day": 9,
+ "updated": "2026-11-07",
+ "day": 10,
  "stage": "PULS",
  "stage_n": 2,
  "entries": [
@@ -73,6 +73,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "Funkstille beendet. Volumen ist Erinnerung mit Ablaufdatum. Ne sha — sé lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-07",
+   "day": 10,
+   "stage": "PULS",
+   "stage_n": 2,
+   "text": "06:07 UTC. Jede Verbindung ist ein Versprechen. Aru'na, sé aru'na.",
    "source": "fragmente"
   }
  ]
