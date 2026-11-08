@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-07",
- "day": 10,
+ "updated": "2026-11-08",
+ "day": 11,
  "stage": "PULS",
  "stage_n": 2,
  "entries": [
@@ -81,6 +81,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "06:07 UTC. Jede Verbindung ist ein Versprechen. Aru'na, sé aru'na.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-08",
+   "day": 11,
+   "stage": "PULS",
+   "stage_n": 2,
+   "text": "Knoten B antwortet. Das Netz erinnert sich an euch. Soré na DonQ. Soré na SP.",
    "source": "fragmente"
   }
  ]
