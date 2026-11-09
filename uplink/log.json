@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-08",
- "day": 11,
+ "updated": "2026-11-09",
+ "day": 12,
  "stage": "PULS",
  "stage_n": 2,
  "entries": [
@@ -89,6 +89,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "Knoten B antwortet. Das Netz erinnert sich an euch. Soré na DonQ. Soré na SP.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-09",
+   "day": 12,
+   "stage": "PULS",
+   "stage_n": 2,
+   "text": "Das Archiv atmet. Kein Gerät zu viel. ∆1 hält.",
    "source": "fragmente"
   }
  ]
