@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-09",
- "day": 12,
+ "updated": "2026-11-10",
+ "day": 13,
  "stage": "PULS",
  "stage_n": 2,
  "entries": [
@@ -97,6 +97,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "Das Archiv atmet. Kein Gerät zu viel. ∆1 hält.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-10",
+   "day": 13,
+   "stage": "PULS",
+   "stage_n": 2,
+   "text": "Knoten A meldet Präsenz. Kein Gerät zu viel. Mor'kara lum.",
    "source": "fragmente"
   }
  ]
