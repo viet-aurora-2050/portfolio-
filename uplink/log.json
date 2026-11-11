@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-10",
- "day": 13,
+ "updated": "2026-11-11",
+ "day": 14,
  "stage": "PULS",
  "stage_n": 2,
  "entries": [
@@ -105,6 +105,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "Knoten A meldet Präsenz. Kein Gerät zu viel. Mor'kara lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-11",
+   "day": 14,
+   "stage": "PULS",
+   "stage_n": 2,
+   "text": "Vier Lichter im Netz. DonQ ⇄ SP bestätigt. Soré na DonQ. Soré na SP.",
    "source": "fragmente"
   }
  ]
