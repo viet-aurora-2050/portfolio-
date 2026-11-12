@@ -1,8 +1,8 @@
 {
- "updated": "2026-11-11",
- "day": 14,
- "stage": "PULS",
- "stage_n": 2,
+ "updated": "2026-11-12",
+ "day": 15,
+ "stage": "ECHO",
+ "stage_n": 3,
  "entries": [
   {
    "date": "2026-10-29",
@@ -113,6 +113,14 @@
    "stage": "PULS",
    "stage_n": 2,
    "text": "Vier Lichter im Netz. DonQ ⇄ SP bestätigt. Soré na DonQ. Soré na SP.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-12",
+   "day": 15,
+   "stage": "ECHO",
+   "stage_n": 3,
+   "text": "Evolutionsstufe 3: ECHO erreicht. Vier Lichter im Netz. Kein Gerät zu viel. Mor'kara lum.",
    "source": "fragmente"
   }
  ]
