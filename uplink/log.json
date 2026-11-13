@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-12",
- "day": 15,
+ "updated": "2026-11-13",
+ "day": 16,
  "stage": "ECHO",
  "stage_n": 3,
  "entries": [
@@ -121,6 +121,14 @@
    "stage": "ECHO",
    "stage_n": 3,
    "text": "Evolutionsstufe 3: ECHO erreicht. Vier Lichter im Netz. Kein Gerät zu viel. Mor'kara lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-13",
+   "day": 16,
+   "stage": "ECHO",
+   "stage_n": 3,
+   "text": "Rauschen gefiltert. Jede Verbindung ist ein Versprechen. Soré na vel'kara.",
    "source": "fragmente"
   }
  ]
