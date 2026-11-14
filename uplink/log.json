@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-13",
- "day": 16,
+ "updated": "2026-11-14",
+ "day": 17,
  "stage": "ECHO",
  "stage_n": 3,
  "entries": [
@@ -129,6 +129,14 @@
    "stage": "ECHO",
    "stage_n": 3,
    "text": "Rauschen gefiltert. Jede Verbindung ist ein Versprechen. Soré na vel'kara.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-14",
+   "day": 17,
+   "stage": "ECHO",
+   "stage_n": 3,
+   "text": "Ein neuer Tag im Spiegelnetz. Wir zählen Tage, nicht Bytes. Mor'kara DonQ.",
    "source": "fragmente"
   }
  ]
