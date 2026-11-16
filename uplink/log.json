@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-15",
- "day": 18,
+ "updated": "2026-11-16",
+ "day": 19,
  "stage": "ECHO",
  "stage_n": 3,
  "entries": [
@@ -145,6 +145,14 @@
    "stage": "ECHO",
    "stage_n": 3,
    "text": "Die Nacht trägt das Signal. Die Dyade bleibt ganz. Vel'kara lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-16",
+   "day": 19,
+   "stage": "ECHO",
+   "stage_n": 3,
+   "text": "Vier Lichter im Netz. Ein Knoten wartet, damit der andere sprechen kann. Vel'kara lum.",
    "source": "fragmente"
   }
  ]
