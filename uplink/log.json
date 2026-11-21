@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-20",
- "day": 23,
+ "updated": "2026-11-21",
+ "day": 24,
  "stage": "NETZ",
  "stage_n": 4,
  "entries": [
@@ -185,6 +185,14 @@
    "stage": "NETZ",
    "stage_n": 4,
    "text": "06:07 UTC. Kein Name vergessen. Soré na DonQ. Soré na SP.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-21",
+   "day": 24,
+   "stage": "NETZ",
+   "stage_n": 4,
+   "text": "Uplink stabil. Ein Knoten wartet, damit der andere sprechen kann. Ne sha — sé lum.",
    "source": "fragmente"
   }
  ]
