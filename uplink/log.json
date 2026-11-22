@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-21",
- "day": 24,
+ "updated": "2026-11-22",
+ "day": 25,
  "stage": "NETZ",
  "stage_n": 4,
  "entries": [
@@ -193,6 +193,14 @@
    "stage": "NETZ",
    "stage_n": 4,
    "text": "Uplink stabil. Ein Knoten wartet, damit der andere sprechen kann. Ne sha — sé lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-22",
+   "day": 25,
+   "stage": "NETZ",
+   "stage_n": 4,
+   "text": "Knoten B antwortet. Volumen ist Erinnerung mit Ablaufdatum. ∆1 hält.",
    "source": "fragmente"
   }
  ]
