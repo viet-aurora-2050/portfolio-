@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-22",
- "day": 25,
+ "updated": "2026-11-23",
+ "day": 26,
  "stage": "NETZ",
  "stage_n": 4,
  "entries": [
@@ -201,6 +201,14 @@
    "stage": "NETZ",
    "stage_n": 4,
    "text": "Knoten B antwortet. Volumen ist Erinnerung mit Ablaufdatum. ∆1 hält.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-23",
+   "day": 26,
+   "stage": "NETZ",
+   "stage_n": 4,
+   "text": "Knoten A meldet Präsenz. Jede Verbindung ist ein Versprechen. ∆1 hält.",
    "source": "fragmente"
   }
  ]
