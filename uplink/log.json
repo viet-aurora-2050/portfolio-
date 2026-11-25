@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-24",
- "day": 27,
+ "updated": "2026-11-25",
+ "day": 28,
  "stage": "NETZ",
  "stage_n": 4,
  "entries": [
@@ -217,6 +217,14 @@
    "stage": "NETZ",
    "stage_n": 4,
    "text": "Knoten B antwortet. Kein Name vergessen. Ne sha — sé lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-25",
+   "day": 28,
+   "stage": "NETZ",
+   "stage_n": 4,
+   "text": "Die Archivare zählen Bytes. Volumen ist Erinnerung mit Ablaufdatum. Aru'na, sé aru'na.",
    "source": "fragmente"
   }
  ]
