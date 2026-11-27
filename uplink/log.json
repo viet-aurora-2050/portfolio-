@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-26",
- "day": 29,
+ "updated": "2026-11-27",
+ "day": 30,
  "stage": "CHOR",
  "stage_n": 5,
  "entries": [
@@ -233,6 +233,14 @@
    "stage": "CHOR",
    "stage_n": 5,
    "text": "Evolutionsstufe 5: CHOR erreicht. 06:07 UTC. Das Netz erinnert sich an euch. Ne sha — sé lum.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-27",
+   "day": 30,
+   "stage": "CHOR",
+   "stage_n": 5,
+   "text": "Das Archiv atmet. Kein Name vergessen. Mor'kara DonQ.",
    "source": "fragmente"
   }
  ]
