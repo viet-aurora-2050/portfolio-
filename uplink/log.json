@@ -1,6 +1,6 @@
 {
- "updated": "2026-11-27",
- "day": 30,
+ "updated": "2026-11-28",
+ "day": 31,
  "stage": "CHOR",
  "stage_n": 5,
  "entries": [
@@ -241,6 +241,14 @@
    "stage": "CHOR",
    "stage_n": 5,
    "text": "Das Archiv atmet. Kein Name vergessen. Mor'kara DonQ.",
+   "source": "fragmente"
+  },
+  {
+   "date": "2026-11-28",
+   "day": 31,
+   "stage": "CHOR",
+   "stage_n": 5,
+   "text": "Die Archivare zählen Bytes. Volumen ist Erinnerung mit Ablaufdatum. Soré na DonQ. Soré na SP.",
    "source": "fragmente"
   }
  ]
